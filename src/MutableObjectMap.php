@@ -4,7 +4,7 @@ namespace AG\Collection;
 
 /**
  * @template K
- * @template V
+ * @template-covariant V
  * @template-extends ObjectMap<K,V>
  * @template-implements MutableMap<K,V>
  */

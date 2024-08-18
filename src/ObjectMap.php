@@ -9,23 +9,28 @@ use Serializable;
 
 /**
  * @template K
- * @template V
- * @template-extends AbstractMap<K<V>
+ * @template-covariant V
+ * @template-extends AbstractMap<K,V>
  */
 class ObjectMap extends AbstractMap implements JsonSerializable, Serializable
 {
     protected array $keys;
     protected array $values;
+    protected int $size = 0;
 
-    public function __construct(?Map $map = null)
+    public function __construct(null|Map|array $map = null)
     {
         if ($map === null) {
             $this->keys = [];
             $this->values = [];
-        } else {
+        } elseif ($map instanceof Map) {
             $this->keys = $map->keys()->toArray();
             $this->values = $map->values()->toArray();
+        } else {
+            $this->keys = array_keys($map);
+            $this->values = array_values($map);
         }
+        $this->size = count($map);
     }
 
     /**
@@ -34,8 +39,7 @@ class ObjectMap extends AbstractMap implements JsonSerializable, Serializable
      */
     public function offsetExists(mixed $offset): bool
     {
-        $indexOf = $this->keys()->indexOf($offset);
-        return $indexOf !== -1;
+        return $this->keys()->contains($offset);
     }
 
     /**
@@ -63,6 +67,7 @@ class ObjectMap extends AbstractMap implements JsonSerializable, Serializable
             if ($indexOf === -1) {
                 $this->keys[] = $offset;
                 $this->values[] = $value;
+                $this->size++;
             } else {
                 $this->values[$indexOf] = $value;
             }
@@ -80,13 +85,14 @@ class ObjectMap extends AbstractMap implements JsonSerializable, Serializable
             if ($indexOf !== -1) {
                 unset($this->keys[$indexOf]);
                 unset($this->values[$indexOf]);
+                $this->size--;
             }
         } else throw new RuntimeException(get_called_class() . ' is unchanged!, please use the ' . MutableObjectMap::class . '.');
     }
 
     public function size(): int
     {
-        return count($this->keys);
+        return $this->size;
     }
 
     /**
@@ -130,6 +136,10 @@ class ObjectMap extends AbstractMap implements JsonSerializable, Serializable
     public function unserialize(string $data): void
     {
         list($this->keys, $this->values) = unserialize($data);
+        $this->size = count($this->keys);
+        if ($this->size() !== count($this->values)) {
+            throw new RuntimeException("Keys not followed values!");
+        }
     }
 
     public function __serialize(): array
@@ -140,5 +150,9 @@ class ObjectMap extends AbstractMap implements JsonSerializable, Serializable
     public function __unserialize(array $data): void
     {
         list($this->keys, $this->values) = $data;
+        $this->size = count($this->keys);
+        if ($this->size() !== count($this->values)) {
+            throw new RuntimeException("Keys not followed values!");
+        }
     }
 }

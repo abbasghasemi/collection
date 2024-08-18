@@ -4,6 +4,12 @@
     <strong>A PHP library for work with arrays</strong>
 </p>
 
+## Powerful
+- Support List, Map, Set, Stack, Queue, Object ...
+- Functional (indexOf, map, where, reduce, first, firstOrNull firstWhere, ...)
+- Type generic documentation
+- Collections class for generate & filled List `Collections::filled(int $length, mixed $element)`
+
 ## Installation
 
 The preferred of installation is via [Composer](https://getcomposer.org). Run the following
@@ -21,12 +27,14 @@ echo count($list); // 10
 echo Collections::toArraySet($list)->size(); // 1
 $list->add(1); // This method does not exist!
 echo $list->first(); // filled
+
 $list = new MutableArrayList(/*[default]*/);
 $list->add(1); // added
 $list->add(5); // added
 echo count($list); // 2
 echo $list->indexOf(1); // 0
 echo $list->indexOf(6); // -1
+
 $list = Collections::generate(10, function ($index){
     return $index;
 }); // ArrayList
@@ -166,7 +174,7 @@ echo $object->join(','); // first,last
 | toMutableArraySet  | `Collections::toMutableArraySet(Collection $collection): MutableArraySet`   |
 | sortAscending      | `Collections::sortAscending(MutableCollection $collection): void`           |
 | sortDescending     | `Collections::sortDescending(MutableCollection $collection): void`          |
-| equals             | `Collections::equals(?MutableArrayList $a, ?MutableArrayList $b): bool`     |
+| equals             | `Collections::equals(?ObjectC $a, ?ObjectC $b): bool`     |
 | hashCode           | `Collections::hashCode(mixed $value): int`                                  |
 | toString           | `Collections::toString(mixed $value): string`                               |
 

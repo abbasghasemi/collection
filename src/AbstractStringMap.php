@@ -5,45 +5,64 @@ namespace AG\Collection;
 use TypeError;
 
 /**
- * @template V
+ * @template-covariant V
  * @template-extends AbstractMap<string,V>
  */
 abstract class AbstractStringMap extends AbstractMap implements ArrayMap
 {
-    private ?array $iterator = null;
+    private ?array $keys = null;
+
+    private int $pointer = 0;
 
     public function key(): string
     {
-        return array_key_first($this->iterator);
+        return $this->keys[$this->pointer];
     }
 
     public function current(): string
     {
-        return $this->iterator[$this->key()];
+        return $this->toMap()[$this->key()];
     }
 
     public function valid(): bool
     {
-        return !empty($this->iterator);
+        return $this->pointer < $this->size();
     }
 
     public function next(): void
     {
-        array_shift($this->iterator);
+        $this->pointer++;
+        if (!$this->valid()) {
+            $this->keys = null;
+            $this->pointer = 0;
+        }
+    }
+
+    public function forward(int $count = 1): void
+    {
+        assert($this->keys !== null && $count > 0 && $this->pointer + $count < $this->size());
+        $this->pointer += $count;
+    }
+
+    public function back(int $count = 1): void
+    {
+        assert($this->keys !== null && $count > 0 && $this->pointer - $count > -1);
+        $this->pointer -= $count;
     }
 
     public function rewind(): void
     {
-        $this->iterator = array_replace($this->toMap());
+        $this->pointer = 0;
+        $this->keys = array_keys($this->toMap());
     }
 
     /**
-     * @param callable(string,V): void $callback
+     * @param callable(V,string): void $callback
      * @return void
      */
     public function forEach(callable $callback): void
     {
-        foreach ($this->toMap() as $k => $v) call_user_func($callback, $k, $v);
+        foreach ($this->toMap() as $k => $v) call_user_func($callback, $v, $k);
     }
 
     /**

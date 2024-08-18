@@ -4,7 +4,7 @@ namespace AG\Collection;
 
 /**
  * @template K
- * @template V
+ * @template-covariant V
  * @template-extends Map<K,V>
  */
 abstract class AbstractMap implements Map
@@ -44,6 +44,18 @@ abstract class AbstractMap implements Map
         $this->pointer++;
     }
 
+    public function forward(int $count = 1): void
+    {
+        assert($count > 0 && $this->pointer + $count < $this->size());
+        $this->pointer += $count;
+    }
+
+    public function back(int $count = 1): void
+    {
+        assert($count > 0 && $this->pointer - $count > -1);
+        $this->pointer -= $count;
+    }
+
     public function rewind(): void
     {
         $this->pointer = 0;
@@ -65,12 +77,12 @@ abstract class AbstractMap implements Map
     }
 
     /**
-     * @param callable(K,V): void $callback
+     * @param callable(V,K): void $callback
      * @return void
      */
     public function forEach(callable $callback): void
     {
-        foreach ($this->keys() as $k) call_user_func($callback, $k, $this[$k]);
+        foreach ($this->keys() as $k) call_user_func($callback, $this[$k], $k);
     }
 
     /**
@@ -139,8 +151,8 @@ abstract class AbstractMap implements Map
         if ($this->isEmpty()) return "{}";
         $str = '';
         foreach ($this->keys() as $key) {
-            $str .= $key . ":" . $this[$key] . ',';
+            $str .= $key . ":" . Collections::toString($this[$key]) . ',';
         }
-        return "{$str}";
+        return "{{$str}}";
     }
 }

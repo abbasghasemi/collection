@@ -111,11 +111,11 @@ trait MutableArrayListTrait
     }
 
     /**
-     * @return ArrayList<T>
+     * @return void
      */
-    public function reversed(): ArrayList
+    public function reversed(): void
     {
-        return new ArrayList(array_reverse($this->list));
+        $this->list = array_reverse($this->list);
     }
 
     public function shuffle(): void

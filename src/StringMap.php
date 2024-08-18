@@ -8,12 +8,13 @@ use RuntimeException;
 use Serializable;
 
 /**
- * @template V
+ * @template-covariant V
  * @template-extends AbstractStringMap<V>
  */
 class StringMap extends AbstractStringMap implements JsonSerializable, Serializable
 {
     protected array $map;
+    protected int $size = 0;
 
     public function __construct(null|array|ArrayMap $map = null)
     {
@@ -22,6 +23,7 @@ class StringMap extends AbstractStringMap implements JsonSerializable, Serializa
         }
         $map ??= array();
         $this->map = $map instanceof ArrayMap ? $map->toMap() : $map;
+        $this->size = count($map);
     }
 
     /**
@@ -53,6 +55,9 @@ class StringMap extends AbstractStringMap implements JsonSerializable, Serializa
     {
         $this->checkKeyType($offset);
         if ($this instanceof MutableMap) {
+            if (!isset($this->map[$offset])) {
+                $this->size++;
+            }
             $this->map[$offset] = $value;
         } else throw new RuntimeException(get_called_class() . ' is unchanged!, please use the ' . MutableStringMap::class . '.');
     }
@@ -65,13 +70,16 @@ class StringMap extends AbstractStringMap implements JsonSerializable, Serializa
     {
         $this->checkKeyType($offset);
         if ($this instanceof MutableMap) {
-            unset($this->map[$offset]);
+            if (isset($this->map[$offset])) {
+                unset($this->map[$offset]);
+                $this->size--;
+            }
         } else throw new RuntimeException(get_called_class() . ' is unchanged!, please use the ' . MutableStringMap::class . '.');
     }
 
     public function size(): int
     {
-        return count($this->map);
+        return $this->size;
     }
 
     /**
@@ -91,7 +99,7 @@ class StringMap extends AbstractStringMap implements JsonSerializable, Serializa
      */
     public function values(): ArrayList
     {
-        return new ArrayList(array_values($this->map));
+        return new ArrayList($this->map);
     }
 
     /**
@@ -99,7 +107,7 @@ class StringMap extends AbstractStringMap implements JsonSerializable, Serializa
      */
     public function mutableValues(): MutableArrayList
     {
-        return new MutableArrayList(array_values($this->map));
+        return new MutableArrayList($this->map);
     }
 
     public function jsonSerialize(): mixed
@@ -116,6 +124,7 @@ class StringMap extends AbstractStringMap implements JsonSerializable, Serializa
     {
         $this->map = unserialize($data);
         foreach ($this->map as $k => $v) $this->checkKeyType($k);
+        $this->size = count($this->map);
     }
 
     public function __serialize(): array
@@ -127,6 +136,7 @@ class StringMap extends AbstractStringMap implements JsonSerializable, Serializa
     {
         $this->map = $data[0];
         foreach ($this->map as $k => $v) $this->checkKeyType($k);
+        $this->size = count($this->map);
     }
 
     public function toMap(): array

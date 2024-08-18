@@ -170,7 +170,7 @@ class Collections
         });
     }
 
-    public static function equals(?MutableArrayList $a, ?MutableArrayList $b): bool
+    public static function equals(?ObjectC $a, ?ObjectC $b): bool
     {
         if ($a === $b) {
             return true;

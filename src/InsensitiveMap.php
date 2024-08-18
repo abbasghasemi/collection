@@ -6,7 +6,7 @@ namespace AG\Collection;
 use RuntimeException;
 
 /**
- * @template V
+ * @template-covariant V
  * @template-extends StringMap<V>
  */
 class InsensitiveMap extends StringMap
@@ -21,6 +21,7 @@ class InsensitiveMap extends StringMap
         if (!empty($map)) {
             if ($map instanceof InsensitiveMap) {
                 $this->map = $map->toMap();
+                $this->size = count($map);
             } else {
                 $map = $map instanceof ArrayMap ? $map->toMap() : $map;
                 foreach ($map as $k => $v) {
@@ -72,7 +73,7 @@ class InsensitiveMap extends StringMap
     {
         $this->checkKeyType($offset);
         if ($this instanceof MutableMap) {
-            unset($this[$offset]);
+            if (isset($this->map[$offset])) unset($this[$offset]); else $this->size++;
             $this->map[$offset] = $value;
         } else throw new RuntimeException(get_called_class() . ' is unchanged!, please use the ' . MutableStringMap::class . '.');
     }
@@ -87,6 +88,7 @@ class InsensitiveMap extends StringMap
         if ($this instanceof MutableMap) {
             $entry = $this->findByKey($offset);
             if (!empty($entry)) {
+                $this->size--;
                 unset($this->map[$entry->getKey()]);
             }
         } else throw new RuntimeException(get_called_class() . ' is unchanged!, please use the ' . MutableStringMap::class . '.');
