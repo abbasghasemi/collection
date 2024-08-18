@@ -3,7 +3,7 @@
 namespace AG\Collection;
 
 /**
- * @template V
+ * @template-covariant V
  * @template-extends MutableObjectMapTrait<string,V>
  * @template-implements MutableMap<string,V>
  */

@@ -3,7 +3,7 @@
 namespace AG\Collection;
 /**
  * @template K
- * @template V
+ * @template-covariant V
  */
 trait MutableObjectMapTrait
 {
@@ -23,10 +23,10 @@ trait MutableObjectMapTrait
     }
 
     /**
-     * @param MutableMap<K,V> $map
+     * @param Map<K,V> $map
      * @return void
      */
-    public function putAll(MutableMap $map): void
+    public function putAll(Map $map): void
     {
         foreach ($map as $k => $v) $this[$k] = $v;
     }

@@ -2,38 +2,18 @@
 
 namespace AG\Collection;
 
-use Countable;
-use Iterator;
-
 /**
  * @template T
+ * @template-extends BaseArray<int,T>
  * @see ArrayList,MutableArrayList
  */
-interface Collection extends Iterator, Countable, ObjectC
+interface Collection extends BaseArray
 {
-    public function forward(int $count = 1): void;
-
-    public function back(int $count = 1): void;
-
-    public function size(): int;
-
-    public function isEmpty(): bool;
-
-    public function isNotEmpty(): bool;
-
     /**
      * @param T $element
      * @return bool
      */
     public function contains(mixed $element): bool;
-
-    public function toArray(): array;
-
-    /**
-     * @param callable(T): void $callback
-     * @return void
-     */
-    public function forEach(callable $callback): void;
 
     /**
      * @return T
@@ -120,4 +100,6 @@ interface Collection extends Iterator, Countable, ObjectC
     public function lastIndexWhere(callable $test, ?int $start = null): int;
 
     public function sort(Comparator|callable $cmp): void;
+
+    public function toArray(): array;
 }

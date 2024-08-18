@@ -3,27 +3,14 @@
 namespace AG\Collection;
 
 use ArrayAccess;
-use Countable;
-use Iterator;
 
 /**
  * @template K
- * @template V
+ * @template-covariant V
+ * @template-extends BaseArray<K,V>
  */
-interface Map extends ArrayAccess, Iterator, Countable, ObjectC
+interface Map extends BaseArray, ArrayAccess
 {
-    public function size(): int;
-
-    public function isEmpty(): bool;
-
-    public function isNotEmpty(): bool;
-
-    /**
-     * @param callable(K,V): void $callback
-     * @return void
-     */
-    public function forEach(callable $callback): void;
-
     /**
      * @param K $key
      * @return bool

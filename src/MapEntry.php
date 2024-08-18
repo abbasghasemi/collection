@@ -4,7 +4,7 @@ namespace AG\Collection;
 
 /**
  * @template K
- * @template V
+ * @template-covariant V
  * @template-implements Entry<K,V>
  */
 class MapEntry implements Entry

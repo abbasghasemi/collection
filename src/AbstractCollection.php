@@ -145,12 +145,12 @@ abstract class AbstractCollection implements Collection
     }
 
     /**
-     * @param callable(T): void $callback
+     * @param callable(T,int): void $callback
      * @return void
      */
     public function forEach(callable $callback): void
     {
-        foreach ($this as $i) call_user_func($callback, $i);
+        foreach ($this as $i => $v) call_user_func($callback, $v, $i);
     }
 
     /**

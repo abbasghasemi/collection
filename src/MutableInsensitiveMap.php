@@ -3,7 +3,7 @@
 namespace AG\Collection;
 
 /**
- * @template V
+ * @template-covariant V
  * @template-extends InsensitiveMap<V>
  * @template-implements MutableMap<string,V>
  */
@@ -24,12 +24,15 @@ class MutableInsensitiveMap extends InsensitiveMap implements MutableMap
 
 
     /**
-     * @param MutableMap<string,V> $map
+     * @param Map<string,V> $map
      * @return void
      */
-    public function putAll(MutableMap $map): void
+    public function putAll(Map $map): void
     {
-        foreach ($map as $k => $value) if (!$this->containsKey($k)) $this->map[$k] = $value;
+        foreach ($map as $k => $value) if (!$this->containsKey($k)) {
+            $this->map[$k] = $value;
+            $this->size++;
+        }
     }
 
     /**
@@ -40,7 +43,8 @@ class MutableInsensitiveMap extends InsensitiveMap implements MutableMap
     public function update(mixed $key, mixed $value): void
     {
         $entry = $this->findByKey($key);
-        if (!empty($entry)) unset($this->map[$entry->getKey()]);
+        if (empty($entry)) $this->size++;
+        else unset($this->map[$entry->getKey()]);
         $this->map[$key] = $value;
     }
 
@@ -80,6 +84,7 @@ class MutableInsensitiveMap extends InsensitiveMap implements MutableMap
         $entry = $this->findByKey($key);
         if (!empty($entry)) {
             unset($this->map[$entry->getKey()]);
+            $this->size--;
             return $entry->getValue();
         }
         return null;
@@ -91,7 +96,10 @@ class MutableInsensitiveMap extends InsensitiveMap implements MutableMap
      */
     public function removeWhere(callable $test): void
     {
-        foreach ($this->map as $k => $v) if ($test($k, $v)) unset($this->map[$k]);
+        foreach ($this->map as $k => $v) if ($test($k, $v)) {
+            unset($this->map[$k]);
+            $this->size--;
+        }
     }
 
 }

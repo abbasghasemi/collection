@@ -4,7 +4,7 @@ namespace AG\Collection;
 
 /**
  * @template K
- * @template V
+ * @template-covariant V
  */
 interface Entry
 {

@@ -4,7 +4,7 @@ namespace AG\Collection;
 
 /**
  * @template K
- * @template V
+ * @template-covariant V
  * @template-extends Map<K,V>
  */
 interface MutableMap extends Map
@@ -19,10 +19,10 @@ interface MutableMap extends Map
 
 
     /**
-     * @param MutableMap $map
+     * @param Map $map
      * @return void
      */
-    public function putAll(self $map): void;
+    public function putAll(Map $map): void;
 
     /**
      * @param K $key
