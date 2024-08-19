@@ -22,6 +22,7 @@ class MutableArraySet extends ArraySet implements MutableCollection
      */
     public function insert(int $index, mixed $element): void
     {
+        $this->checkElementType($element);
         if (!in_array($element, $this->list, true)) {
             assert($index > -1);
             array_splice($this->list, $index, 0, $element);
@@ -37,23 +38,38 @@ class MutableArraySet extends ArraySet implements MutableCollection
     public function insertAll(int $index, Collection|array $elements): void
     {
         assert($index > -1);
-        $check = !($elements instanceof ArraySet);
+        $checkType = $this->requiredCheckType() && (is_array($elements) || !$this->equalsType($elements));
         if ($elements instanceof Collection) {
             $elements = $elements->toArray();
         } else {
             $elements = array_values($elements);
         }
-        if ($check) {
-            $list = [];
-            foreach ($elements as $element) {
-                if (!in_array($element, $this->list, true)) {
-                    $list[] = $element;
-                }
+        $list = [];
+        foreach ($elements as $element) {
+            if ($checkType) $this->checkElementType($element);
+            if (!in_array($element, $this->list, true)) {
+                $list[] = $element;
             }
-            $elements = $list;
         }
+        $elements = $list;
         array_splice($this->list, $index, 0, $elements);
         $this->size += count($elements);
+    }
+
+
+    /**
+     * @param int<0,max> $index
+     * @param T $element
+     * @return bool
+     */
+    public function update(int $index, mixed $element): bool
+    {
+        $this->checkElementType($element);
+        if ($index >= $this->size() || $this->contains($element)) {
+            return false;
+        }
+        $this->list[$index] = $element;
+        return true;
     }
 
     public function getRange(int $start, int $length): self

@@ -35,6 +35,14 @@ interface MutableCollection extends Collection
      */
     public function insertAll(int $index, Collection|array $elements): void;
 
+
+    /**
+     * @param int<0,max> $index
+     * @param T $element
+     * @return bool
+     */
+    public function update(int $index, mixed $element): bool;
+
     /**
      * @param int<0,max> $index
      * @return mixed

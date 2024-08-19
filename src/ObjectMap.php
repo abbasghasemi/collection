@@ -18,8 +18,18 @@ class ObjectMap extends AbstractMap implements JsonSerializable, Serializable
     protected array $values;
     protected int $size = 0;
 
-    public function __construct(null|Map|array $map = null)
+    public function __construct(
+        null|Map|array           $map = null,
+        private readonly ?string $keyType = null,
+        private readonly ?string $valueType = null,
+    )
     {
+        if (is_array($map) || ($map instanceof Map && (
+                    $this->requiredCheckKeyType() && !$this->equalsKeyType($map) ||
+                    $this->requiredCheckValueType() && !$this->equalsValueType($map)
+                ))) {
+            foreach ($map as $k => $v) $this->checkKeyValueType($k, $v);
+        }
         if ($map === null) {
             $this->keys = [];
             $this->values = [];
@@ -30,7 +40,7 @@ class ObjectMap extends AbstractMap implements JsonSerializable, Serializable
             $this->keys = array_keys($map);
             $this->values = array_values($map);
         }
-        $this->size = count($map);
+        $this->size = count($this->keys);
     }
 
     /**
@@ -63,6 +73,7 @@ class ObjectMap extends AbstractMap implements JsonSerializable, Serializable
     public function offsetSet(mixed $offset, mixed $value): void
     {
         if ($this instanceof MutableMap) {
+            $this->checkKeyValueType($offset, $value);
             $indexOf = $this->keys()->indexOf($offset);
             if ($indexOf === -1) {
                 $this->keys[] = $offset;
@@ -121,6 +132,16 @@ class ObjectMap extends AbstractMap implements JsonSerializable, Serializable
     public function mutableValues(): MutableArrayList
     {
         return new MutableArrayList($this->values);
+    }
+
+    public function getKeyType(): ?string
+    {
+        return $this->keyType;
+    }
+
+    public function getValueType(): ?string
+    {
+        return $this->valueType;
     }
 
     public function jsonSerialize(): mixed

@@ -11,6 +11,8 @@ use RuntimeException;
  */
 abstract class AbstractCollection implements Collection
 {
+    use CheckTypeTrait;
+
     private int $pointer = 0;
 
     /**
@@ -316,6 +318,22 @@ abstract class AbstractCollection implements Collection
         return $this->size();
     }
 
+    protected function requiredCheckType(): bool
+    {
+        return $this->getType() !== null && $this->getType() !== 'mixed';
+    }
+
+    protected function equalsType(Collection $collection): bool
+    {
+        $type = $this->getType();
+        return $type === $collection->getType() || $collection->getType() instanceof $type;
+    }
+
+    protected function checkElementType(mixed $element): void
+    {
+        $this->checkType($this->getType(), $element, fn() => "Element type most be '{$this->getType()}'!");
+    }
+
     public function hashCode(): int
     {
         $hashCode = 1;
@@ -358,12 +376,12 @@ abstract class AbstractCollection implements Collection
     private function createCollection(array $array): Collection
     {
         if ($this instanceof MutableArrayList) {
-            return new MutableArrayList($array);
+            return new MutableArrayList($array, $this->getType());
         } else if ($this instanceof MutableArraySet) {
-            return new MutableArraySet($array);
+            return new MutableArraySet($array, $this->getType());
         } else if ($this instanceof ArraySet) {
-            return new ArraySet($array);
+            return new ArraySet($array, $this->getType());
         }
-        return new ArrayList($array);
+        return new ArrayList($array, $this->getType());
     }
 }

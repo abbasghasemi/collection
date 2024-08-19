@@ -16,14 +16,27 @@ class StringMap extends AbstractStringMap implements JsonSerializable, Serializa
     protected array $map;
     protected int $size = 0;
 
-    public function __construct(null|array|ArrayMap $map = null)
+    public function __construct(
+        null|array|Map           $map = null,
+        private readonly ?string $type = null,
+    )
     {
-        if (is_array($map)) {
-            foreach ($map as $k => $v) $this->checkKeyType($k);
+        if (is_array($map) || ($map instanceof Map && (
+                    !$this->equalsKeyType($map) ||
+                    $this->requiredCheckValueType() && !$this->equalsValueType($map)
+                ))) {
+            foreach ($map as $k => $v) $this->checkKeyValueType($k, $v);
         }
-        $map ??= array();
-        $this->map = $map instanceof ArrayMap ? $map->toMap() : $map;
-        $this->size = count($map);
+        if ($map === null) {
+            $this->map = [];
+        } elseif ($map instanceof AbstractStringMap) {
+            $this->map = $map->toMap();
+        } elseif ($map instanceof Map) {
+            $this->map = array_combine($map->keys()->toArray(), $map->values()->toArray());
+        } else {
+            $this->map = $map;
+        }
+        $this->size = count($this->map);
     }
 
     /**
@@ -32,7 +45,7 @@ class StringMap extends AbstractStringMap implements JsonSerializable, Serializa
      */
     public function offsetExists(mixed $offset): bool
     {
-        $this->checkKeyType($offset);
+        if (!is_string($offset)) return false;
         return isset($this->map[$offset]);
     }
 
@@ -42,7 +55,7 @@ class StringMap extends AbstractStringMap implements JsonSerializable, Serializa
      */
     public function offsetGet(mixed $offset): mixed
     {
-        $this->checkKeyType($offset);
+        if (!is_string($offset)) return null;
         return $this->map[$offset] ?? null;
     }
 
@@ -53,7 +66,7 @@ class StringMap extends AbstractStringMap implements JsonSerializable, Serializa
      */
     public function offsetSet(mixed $offset, mixed $value): void
     {
-        $this->checkKeyType($offset);
+        $this->checkKeyValueType($offset, $value);
         if ($this instanceof MutableMap) {
             if (!isset($this->map[$offset])) {
                 $this->size++;
@@ -68,8 +81,8 @@ class StringMap extends AbstractStringMap implements JsonSerializable, Serializa
      */
     public function offsetUnset(mixed $offset): void
     {
-        $this->checkKeyType($offset);
         if ($this instanceof MutableMap) {
+            if (!is_string($offset)) return;
             if (isset($this->map[$offset])) {
                 unset($this->map[$offset]);
                 $this->size--;
@@ -110,6 +123,16 @@ class StringMap extends AbstractStringMap implements JsonSerializable, Serializa
         return new MutableArrayList($this->map);
     }
 
+    public function getValueType(): ?string
+    {
+        return $this->type;
+    }
+
+    public function toMap(): array
+    {
+        return $this->map;
+    }
+
     public function jsonSerialize(): mixed
     {
         return $this->map;
@@ -137,10 +160,5 @@ class StringMap extends AbstractStringMap implements JsonSerializable, Serializa
         $this->map = $data[0];
         foreach ($this->map as $k => $v) $this->checkKeyType($k);
         $this->size = count($this->map);
-    }
-
-    public function toMap(): array
-    {
-        return $this->map;
     }
 }

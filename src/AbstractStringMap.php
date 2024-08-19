@@ -2,13 +2,11 @@
 
 namespace AG\Collection;
 
-use TypeError;
-
 /**
  * @template-covariant V
  * @template-extends AbstractMap<string,V>
  */
-abstract class AbstractStringMap extends AbstractMap implements ArrayMap
+abstract class AbstractStringMap extends AbstractMap
 {
     private ?array $keys = null;
 
@@ -100,14 +98,10 @@ abstract class AbstractStringMap extends AbstractMap implements ArrayMap
         return new ArrayList($list);
     }
 
-    /**
-     * @param mixed $key
-     * @return void
-     */
-    public function checkKeyType(mixed $key): void
+    public function getKeyType(): ?string
     {
-        if (!is_string($key)) {
-            throw new TypeError("key most be string");
-        }
+        return 'string';
     }
+
+    public abstract function toMap(): array;
 }

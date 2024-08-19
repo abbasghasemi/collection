@@ -12,18 +12,25 @@ use RuntimeException;
 class InsensitiveMap extends StringMap
 {
 
-    public function __construct(null|array|ArrayMap $map = null)
+    public function __construct(
+        null|array|Map $map = null,
+        ?string        $type = null,
+    )
     {
-        parent::__construct();
-        if (is_array($map)) {
-            foreach ($map as $k => $v) $this->checkKeyType($k);
-        }
+        parent::__construct(null, $type);
         if (!empty($map)) {
+            if (is_array($map) || ($map instanceof Map && (
+                        !$this->equalsKeyType($map) ||
+                        $this->requiredCheckValueType() && !$this->equalsValueType($map)
+                    ))) {
+                foreach ($map as $k => $v) $this->checkKeyValueType($k, $v);
+            }
             if ($map instanceof InsensitiveMap) {
                 $this->map = $map->toMap();
-                $this->size = count($map);
+                $this->size = count($this->map);
             } else {
-                $map = $map instanceof ArrayMap ? $map->toMap() : $map;
+                $map = $map instanceof AbstractStringMap ? $map->toMap() :
+                    ($map instanceof Map ? array_combine($map->keys()->toArray(), $map->values()->toArray()) : $map);
                 foreach ($map as $k => $v) {
                     $this[$k] = $v;
                 }
@@ -32,21 +39,11 @@ class InsensitiveMap extends StringMap
     }
 
     /**
-     * @param string $key
-     * @return ?V
-     */
-    public function get(string $key): mixed
-    {
-        return $this[$key];
-    }
-
-    /**
      * @param string $offset
      * @return bool
      */
     public function offsetExists(mixed $offset): bool
     {
-        $this->checkKeyType($offset);
         return $this->containsKey($offset);
     }
 
@@ -56,8 +53,7 @@ class InsensitiveMap extends StringMap
      */
     public function offsetGet(mixed $offset): mixed
     {
-        $this->checkKeyType($offset);
-        $entry = $this->findByKey($offset);
+        $entry = $this->entryKey($offset);
         if (!empty($entry)) {
             return $entry->getValue();
         }
@@ -71,9 +67,10 @@ class InsensitiveMap extends StringMap
      */
     public function offsetSet(mixed $offset, mixed $value): void
     {
-        $this->checkKeyType($offset);
         if ($this instanceof MutableMap) {
-            if (isset($this->map[$offset])) unset($this[$offset]); else $this->size++;
+            $this->checkKeyValueType($offset, $value);
+            $entry = $this->entryKey($offset);
+            if (empty($entry)) $this->size++; else unset($this->map[$entry->getKey()]);
             $this->map[$offset] = $value;
         } else throw new RuntimeException(get_called_class() . ' is unchanged!, please use the ' . MutableStringMap::class . '.');
     }
@@ -84,9 +81,8 @@ class InsensitiveMap extends StringMap
      */
     public function offsetUnset(mixed $offset): void
     {
-        $this->checkKeyType($offset);
         if ($this instanceof MutableMap) {
-            $entry = $this->findByKey($offset);
+            $entry = $this->entryKey($offset);
             if (!empty($entry)) {
                 $this->size--;
                 unset($this->map[$entry->getKey()]);
@@ -100,18 +96,16 @@ class InsensitiveMap extends StringMap
      */
     public function containsKey(mixed $key): bool
     {
-        $this->checkKeyType($key);
-        return $this->findByKey($key) !== null;
+        return $this->entryKey($key) !== null;
     }
 
     /**
      * @param string $key
      * @return ?MapEntry<string, V>
      */
-    public function findByKey(mixed $key): ?MapEntry
+    public function entryKey(mixed $key): ?MapEntry
     {
-        $this->checkKeyType($key);
-        foreach ($this->map as $k => $v) if (strtolower($k) === strtolower($key)) {
+        if (is_string($key)) foreach ($this->map as $k => $v) if (strtolower($k) === strtolower($key)) {
             return new MapEntry($k, $v);
         }
         return null;

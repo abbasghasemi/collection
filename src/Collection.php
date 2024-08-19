@@ -102,4 +102,6 @@ interface Collection extends BaseArray
     public function sort(Comparator|callable $cmp): void;
 
     public function toArray(): array;
+
+    public function getType(): ?string;
 }

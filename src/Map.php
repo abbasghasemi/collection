@@ -11,6 +11,13 @@ use ArrayAccess;
  */
 interface Map extends BaseArray, ArrayAccess
 {
+
+    /**
+     * @param K $key
+     * @return ?V
+     */
+    public function get(mixed $key): mixed;
+
     /**
      * @param K $key
      * @return bool
@@ -42,5 +49,15 @@ interface Map extends BaseArray, ArrayAccess
      * @return ArrayList<Entry<K,V>>
      */
     public function entries(): ArrayList;
+
+    /**
+     * @param K $key
+     * @return ?Entry<K,V>
+     */
+    public function entryKey(mixed $key): ?Entry;
+
+    public function getKeyType(): ?string;
+
+    public function getValueType(): ?string;
 
 }

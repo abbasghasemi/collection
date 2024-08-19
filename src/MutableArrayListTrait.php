@@ -15,6 +15,7 @@ trait MutableArrayListTrait
      */
     public function add(mixed $element): void
     {
+        $this->checkElementType($element);
         $this->insert($this->size(), $element);
     }
 
@@ -34,6 +35,7 @@ trait MutableArrayListTrait
      */
     public function insert(int $index, mixed $element): void
     {
+        $this->checkElementType($element);
         assert($index > -1);
         array_splice($this->list, $index, 0, $element);
         $this->size++;
@@ -47,7 +49,11 @@ trait MutableArrayListTrait
     public function insertAll(int $index, Collection|array $elements): void
     {
         assert($index > -1);
+        $checkType = $this->requiredCheckType() && (is_array($elements) || !$this->equalsType($elements));
         $elements = $elements instanceof Collection ? $elements->toArray() : array_values($elements);
+        if ($checkType)
+            foreach ($elements as $element)
+                $this->checkElementType($element);
         array_splice($this->list, $index, 0, $elements);
         $this->size += count($elements);
     }

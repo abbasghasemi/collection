@@ -12,17 +12,24 @@ interface MutableMap extends Map
 
     /**
      * @param K $key
-     * @param callable():V $ifAbsent
-     * @return V
+     * @param V $value
+     * @return void
      */
-    public function putIfAbsent(mixed $key, callable $ifAbsent): mixed;
-
+    public function put(mixed $key, mixed $value): void;
 
     /**
      * @param Map $map
      * @return void
      */
     public function putAll(Map $map): void;
+
+    /**
+     * @param K $key
+     * @param callable():V $ifAbsent
+     * @return V
+     */
+    public function putIfAbsent(mixed $key, callable $ifAbsent): mixed;
+
 
     /**
      * @param K $key
@@ -44,6 +51,15 @@ interface MutableMap extends Map
      * @return void
      */
     public function replace(mixed $key, callable $replace): void;
+
+
+    /**
+     * @param K $key
+     * @param V $value
+     * @param callable(V $oldValue,V $newValue):V $remapping
+     * @return mixed
+     */
+    public function merge(mixed $key, mixed $value, callable $remapping): mixed;
 
     /**
      * @param K $key

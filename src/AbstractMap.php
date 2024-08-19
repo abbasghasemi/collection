@@ -9,6 +9,7 @@ namespace AG\Collection;
  */
 abstract class AbstractMap implements Map
 {
+    use CheckTypeTrait;
 
     private int $pointer = 0;
 
@@ -87,6 +88,15 @@ abstract class AbstractMap implements Map
 
     /**
      * @param K $key
+     * @return ?V
+     */
+    public function get(mixed $key): mixed
+    {
+        return $this->offsetGet($key);
+    }
+
+    /**
+     * @param K $key
      * @return bool
      */
     public function containsKey(mixed $key): bool
@@ -117,6 +127,16 @@ abstract class AbstractMap implements Map
         $list = [];
         foreach ($this->keys() as $k) $list[] = new MapEntry($k, $this[$k]);
         return new ArrayList($list);
+    }
+
+    /**
+     * @param K $key
+     * @return ?Entry<K,V>
+     */
+    public function entryKey(mixed $key): ?Entry
+    {
+        foreach ($this->keys() as $k) if ($k === $key) return new MapEntry($k, $this[$k]);
+        return null;
     }
 
     public function hashCode(): int
@@ -154,5 +174,43 @@ abstract class AbstractMap implements Map
             $str .= $key . ":" . Collections::toString($this[$key]) . ',';
         }
         return "{{$str}}";
+    }
+
+    protected function requiredCheckKeyType(): bool
+    {
+        return $this->getKeyType() !== null && $this->getKeyType() !== 'mixed';
+    }
+
+    protected function equalsKeyType(Map $map): bool
+    {
+        $type = $this->getKeyType();
+        return $type === $map->getKeyType() || $map->getKeyType() instanceof $type;
+    }
+
+    protected function checkKeyType(mixed $key): void
+    {
+        $this->checkType($this->getKeyType(), $key, fn() => "Key type most be '{$this->getKeyType()}'!");
+    }
+
+    protected function requiredCheckValueType(): bool
+    {
+        return $this->getValueType() !== null && $this->getValueType() !== 'mixed';
+    }
+
+    protected function equalsValueType(Map $map): bool
+    {
+        $type = $this->getValueType();
+        return $type === $map->getValueType() || $map->getValueType() instanceof $type;
+    }
+
+    protected function checkValueType(mixed $value): void
+    {
+        $this->checkType($this->getValueType(), $value, fn() => "Value type must be '{$this->getValueType()}'!");
+    }
+
+    protected function checkKeyValueType(mixed $key, mixed $value): void
+    {
+        $this->checkKeyType($key);
+        $this->checkValueType($value);
     }
 }

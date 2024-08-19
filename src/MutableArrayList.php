@@ -13,7 +13,13 @@ use RuntimeException;
  */
 class MutableArrayList extends ArrayList implements MutableCollection
 {
-   use MutableArrayListTrait;
+    use MutableArrayListTrait;
+
+    public function update(int $index, mixed $element): bool
+    {
+        $this->fillRange($index, 1, $element);
+        return true;
+    }
 
     /**
      * @param int<0,max> $start
@@ -23,6 +29,7 @@ class MutableArrayList extends ArrayList implements MutableCollection
      */
     public function fillRange(int $start, int $length, mixed $element): void
     {
+        $this->checkElementType($element);
         assert($start > -1 && $length > 0 && $this->size() >= $start + $length);
         for ($i = $start; $i < $start + $length; $i++)
             $this->list[$i] = $element;

@@ -10,17 +10,30 @@ use RuntimeException;
  */
 class ArraySet extends ArrayList
 {
-    public function __construct(null|Collection|array $list = null)
+    public function __construct(
+        null|Collection|array $list = null,
+        ?string               $type = null,
+    )
     {
-        parent::__construct();
+        parent::__construct(null, $type);
         if (!empty($list)) {
             if ($list instanceof ArraySet) {
                 $this->list = $list->toArray();
                 $this->size = $this->size();
+                if ($this->requiredCheckType() && !$this->equalsType($list))
+                    foreach ($this->list as $element)
+                        $this->checkElementType($element);
             } else {
-                $list = $list instanceof Collection ? $list->toArray() : array_values($list);
+                $checkType = $this->requiredCheckType();
+                if ($list instanceof Collection) {
+                    if ($checkType && $this->equalsType($list)) $checkType = false;
+                    $list = $list->toArray();
+                } else {
+                    $list = array_values($list);
+                }
                 foreach ($list as $element) {
                     if (!in_array($element, $this->list, true)) {
+                        if ($checkType) $this->checkElementType($element);
                         $this->list[] = $element;
                         $this->size++;
                     }

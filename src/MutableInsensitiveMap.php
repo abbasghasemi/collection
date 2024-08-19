@@ -12,16 +12,6 @@ class MutableInsensitiveMap extends InsensitiveMap implements MutableMap
 
     use MutableObjectMapTrait;
 
-    /**
-     * @param string $key
-     * @param V $value
-     * @return void
-     */
-    public function put(string $key, mixed $value): void
-    {
-        $this[$key] = $value;
-    }
-
 
     /**
      * @param Map<string,V> $map
@@ -30,6 +20,7 @@ class MutableInsensitiveMap extends InsensitiveMap implements MutableMap
     public function putAll(Map $map): void
     {
         foreach ($map as $k => $value) if (!$this->containsKey($k)) {
+            $this->checkKeyValueType($k, $value);
             $this->map[$k] = $value;
             $this->size++;
         }
@@ -42,7 +33,8 @@ class MutableInsensitiveMap extends InsensitiveMap implements MutableMap
      */
     public function update(mixed $key, mixed $value): void
     {
-        $entry = $this->findByKey($key);
+        $this->checkKeyValueType($key, $value);
+        $entry = $this->entryKey($key);
         if (empty($entry)) $this->size++;
         else unset($this->map[$entry->getKey()]);
         $this->map[$key] = $value;
@@ -55,7 +47,9 @@ class MutableInsensitiveMap extends InsensitiveMap implements MutableMap
      */
     public function updateKey(mixed $key, mixed $newKey): void
     {
-        $entry = $this->findByKey($key);
+        $this->checkKeyType($key);
+        $this->checkKeyType($newKey);
+        $entry = $this->entryKey($key);
         if (!empty($entry)) {
             unset($this->map[$entry->getKey()]);
             $this->map[$newKey] = $entry->getValue();
@@ -69,9 +63,11 @@ class MutableInsensitiveMap extends InsensitiveMap implements MutableMap
      */
     public function replace(mixed $key, callable $replace): void
     {
-        $entry = $this->findByKey($key);
+        $entry = $this->entryKey($key);
         if (!empty($entry)) {
-            $this->map[$entry->getKey()] = $replace();
+            $var = $replace();
+            $this->checkValueType($var);
+            $this->map[$entry->getKey()] = $var;
         }
     }
 
@@ -81,7 +77,7 @@ class MutableInsensitiveMap extends InsensitiveMap implements MutableMap
      */
     public function remove(mixed $key): mixed
     {
-        $entry = $this->findByKey($key);
+        $entry = $this->entryKey($key);
         if (!empty($entry)) {
             unset($this->map[$entry->getKey()]);
             $this->size--;

@@ -7,6 +7,18 @@ namespace AG\Collection;
  */
 trait MutableObjectMapTrait
 {
+
+    /**
+     * @param K $key
+     * @param V $value
+     * @return void
+     */
+    public function put(mixed $key, mixed $value): void
+    {
+        $this[$key] = $value;
+    }
+
+
     /**
      * @param K $key
      * @param callable():V $ifAbsent
@@ -66,6 +78,25 @@ trait MutableObjectMapTrait
         if (!empty($this[$key])) {
             $this[$key] = $replace();
         }
+    }
+
+    /**
+     * @param K $key
+     * @param V $value
+     * @param callable(V $oldValue,V $newValue):V $remapping
+     * @return mixed
+     */
+    public function merge(mixed $key, mixed $value, callable $remapping): mixed
+    {
+        $entry = $this->entryKey($key);
+        if ($entry === null) {
+            $this[$key] = $value;
+            return $value;
+        }
+        $merge = $remapping($entry->getValue(), $value);
+        $this->checkValueType($merge);
+        $this[$entry->getKey()] = $merge;
+        return $merge;
     }
 
     /**

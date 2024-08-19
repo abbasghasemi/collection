@@ -24,17 +24,22 @@ class ArrayList extends AbstractCollection implements JsonSerializable, Serializ
     protected int $size = 0;
 
     public function __construct(
-        null|Collection|array $list = null
+        null|Collection|array    $list = null,
+        private readonly ?string $type = null,
     )
     {
         if (!empty($list)) {
+            $checkType = $this->requiredCheckType();
             if ($list instanceof Collection) {
                 $this->list = $list->toArray();
                 $this->size = $this->size();
+                if ($checkType && $this->equalsType($list)) $checkType = false;
             } else {
                 $this->list = array_values($list);
                 $this->size = count($list);
             }
+            if ($checkType) foreach ($this->list as $element)
+                $this->checkElementType($element);
         } else {
             $this->list = array();
         }
@@ -85,12 +90,25 @@ class ArrayList extends AbstractCollection implements JsonSerializable, Serializ
         return $this->size;
     }
 
+    public function getType(): ?string
+    {
+        return $this->type;
+    }
+
     /**
      * @return T[]
      */
     public function toArray(): array
     {
         return $this->list;
+    }
+
+    /**
+     * @return ArraySet<T>
+     */
+    public function toArraySet(): ArraySet
+    {
+        return new ArraySet($this, $this->getType());
     }
 
     public function jsonSerialize(): array
